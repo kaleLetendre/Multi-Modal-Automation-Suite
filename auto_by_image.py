@@ -26,8 +26,6 @@ def screen_capture():
     img = np.array(img)
     # Convert RGB to BGR
     img = img[:, :, ::-1].copy()
-    # save image
-    # return image
     return img
 def locate_area(sample_image, template_image, threshold=0.8):
     # find template in sample image
