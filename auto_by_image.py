@@ -3,8 +3,13 @@ import pyautogui
 import cv2
 import numpy as np
 import time
-import random
 import concurrent.futures
+import json
+# read the master_values.json file
+filename = 'master_values.json'
+master_values = {}
+
+
 
 def process_image(image_name, sample_image):
     # read the image
@@ -62,4 +67,21 @@ def auto_by_image():
 
 while True:
     auto_by_image()
-    time.sleep(0.1)
+    try:
+        try:
+            with open(filename, 'r') as f:
+                # get the values
+                master_values = json.load(f)
+        except:
+            print('master_values.json not found, creating it now')
+            with open(filename, 'w') as f:
+                master_values = {
+                    'auto_by_image_delay': 0.1
+                }
+                json.dump(master_values, f)
+        time.sleep(master_values['auto_by_image_delay'])
+    except:
+        print('auto_by_image_delay not found in master_values.json, adding it now using default value of 0.1')
+        master_values['auto_by_image_delay'] = 0.1
+        with open('master_values.json', 'w') as f:
+            json.dump(master_values, f)
