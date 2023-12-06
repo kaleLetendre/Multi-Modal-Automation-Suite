@@ -27,7 +27,6 @@ def screen_capture():
     # Convert RGB to BGR
     img = img[:, :, ::-1].copy()
     # save image
-    # cv2.imwrite('screenshot.png', img)
     # return image
     return img
 def locate_area(sample_image, template_image, threshold=0.8):
