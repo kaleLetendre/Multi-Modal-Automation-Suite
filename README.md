@@ -17,3 +17,5 @@ for each image based action
 * write a script that should be executed when that image is seen, and put it in the scripts folder
 
 this allows flow between actions to be determined by state and not a predefined sequence
+
+when you are ready to test, simply run the auto_by_image.py file
