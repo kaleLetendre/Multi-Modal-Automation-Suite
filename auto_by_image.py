@@ -18,7 +18,6 @@ def process_image(image_name, sample_image):
         return True
     return False
 
-
 def screen_capture():
     # Take screenshot
     img = pyautogui.screenshot()
