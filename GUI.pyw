@@ -6,24 +6,25 @@ import shutil
 import pyautogui
 
 def upload_image():
-    file_path = filedialog.askopenfilename(title="Select an Image", filetypes=(("Image files", "*.png;*.jpg;*.jpeg"), ("All files", "*.*")))
-    if file_path:
-        destination = os.path.join('images', os.path.basename(file_path))
-        shutil.copy(file_path, destination)
-        print(f"Image uploaded to {destination}.")
+    # get the file (any file)
+    filename = filedialog.askopenfilename(title="Select an Image", filetypes=(("Image files", "*.png;*.jpg;*.jpeg"), ("All files", "*.*")))
+    # copy the file to the images folder and change the name to the name in the name_input
+    shutil.copy(filename, f'images/{name_input.get()}.jpg')
+    #print(f'Copied {filename} to images folder')
 
 
 def upload_file():
-    file_path = filedialog.askopenfilename(title="Select a file", filetypes=(("Python files", "*.py"), ("All files", "*.*")))
-    if file_path:
-        destination = os.path.join('scripts', os.path.basename(file_path))
-        shutil.copy(file_path, destination)
-        print(f"File uploaded to {destination}.")
+    # get the script file
+    filename = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("python files","*.py"),("all files","*.*")))
+    # copy the file to the scripts folder and change the name to the name in the name_input
+    shutil.copy(filename, f'scripts/{name_input.get()}.py')
+    #print(f'Copied {filename} to scripts folder')
+    
 
 def start_script():
     global script_process
     script_process = subprocess.Popen(['python', 'auto_by_image.py'])
-    print("Script started.")
+    #print("Script started.")
     start_btn.config(state=tk.DISABLED)
     stop_btn.config(state=tk.NORMAL)
 
@@ -31,7 +32,7 @@ def stop_script():
     global script_process
     if script_process:
         script_process.terminate()
-        print("Script stopped.")
+        #print("Script stopped.")
         start_btn.config(state=tk.NORMAL)
         stop_btn.config(state=tk.DISABLED)
 
@@ -42,6 +43,7 @@ def collapse():
     start_btn.pack_forget()
     stop_btn.pack_forget()
     collapse_btn.pack_forget()
+    name_input.pack_forget()
     # add the expand button
     expand_btn.pack(fill=tk.X)
     # set the alpha to 0.5
@@ -53,6 +55,7 @@ def expand():
     expand_btn.pack_forget()
     # add all the buttons
     collapse_btn.pack(fill=tk.X)
+    name_input.pack(fill=tk.X)
     image_btn.pack(fill=tk.X)
     script_btn.pack(fill=tk.X)
     start_btn.pack(fill=tk.X)
@@ -71,15 +74,36 @@ root.wm_attributes("-toolwindow", True)
 
 
 # Add buttons and layout
+# input for name to save the image and script with a default value of 'name'
+name_input = tk.Entry(root)
+name_input.insert(0, 'Name')
+# center the text
+name_input.config(justify=tk.CENTER)
 image_btn = tk.Button(root, text="Upload Image", command=upload_image)
 script_btn = tk.Button(root, text="Upload Script", command=upload_file)
 start_btn = tk.Button(root, text="Play", command=start_script)
 stop_btn = tk.Button(root, text="Pause", command=stop_script, state=tk.DISABLED)
-collapse_btn = tk.Button(root, text="Hide", command=collapse)
+collapse_btn = tk.Button(root, text="^", command=collapse)
 expand_btn = tk.Button(root, text="+", command=expand)
 
-# arrange the buttons in a grid
+# change the button colors
+image_btn.config(bg='#393939')
+script_btn.config(bg='#393939')
+start_btn.config(bg='#393939')
+stop_btn.config(bg='#393939')
+collapse_btn.config(bg='#393939')
+expand_btn.config(bg='#393939')
+# change the button text colors
+image_btn.config(fg='#d6d6d6')
+script_btn.config(fg='#d6d6d6')
+start_btn.config(fg='#d6d6d6')
+stop_btn.config(fg='#d6d6d6')
+collapse_btn.config(fg='#d6d6d6')
+expand_btn.config(fg='#d6d6d6')
+
+
 collapse_btn.pack(fill=tk.X)
+name_input.pack(fill=tk.X)
 image_btn.pack(fill=tk.X)
 script_btn.pack(fill=tk.X)
 start_btn.pack(fill=tk.X)
