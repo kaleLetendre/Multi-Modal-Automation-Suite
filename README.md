@@ -38,3 +38,7 @@ Contributing
 ------------
 
 Contributions to enhance this project, such as adding GPU support or improving image processing algorithms, are welcome. Please follow standard GitHub pull request procedures.
+
+Support the creator
+------------
+https://www.buymeacoffee.com/kaleletendw
