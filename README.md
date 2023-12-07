@@ -22,7 +22,7 @@ Features
 
 Setup and Usage
 ---------------
-
+*please give credit and link the project if it is used in anything else*
 1.  Place the images you want to monitor in the `images` folder.
 2.  For each image, create a corresponding Python script in the `scripts` folder. This script will be executed when its associated image is detected.
 3.  Adjust settings in `master_values.json` as needed.
