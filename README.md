@@ -5,6 +5,7 @@
 * images are analyzed on a multithreaded stream so filesize matters as well as order.
 * race conditions and sequecing should be managed by master values
 * scripts should store values in the master_values.json file, this can be used to maintain overall state information (ex. only continue running a script if another script has activated a flag)
+* master_values.json is a sort of "shared memory" amoungst all components of the program
 
 # Usage
 

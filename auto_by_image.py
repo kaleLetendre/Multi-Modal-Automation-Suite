@@ -5,7 +5,11 @@ import numpy as np
 import time
 import concurrent.futures
 import json
-# read the master_values.json file
+import multiprocessing
+
+# Detect the number of CPU cores to set the optimal number of threads for concurrency
+cpu_cores = multiprocessing.cpu_count()
+
 filename = 'master_values.json'
 master_values = {}
 
@@ -59,7 +63,7 @@ def auto_by_image():
     # get screenshot
     sample_image = screen_capture()
     # loop through all the images in the folder
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_cores) as executor:
         for image_name in os.listdir('images'):
             future = executor.submit(process_image, image_name, sample_image)
             if future.result():
