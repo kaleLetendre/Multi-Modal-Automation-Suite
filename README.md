@@ -26,7 +26,7 @@ Setup and Usage
 1.  Place the images you want to monitor in the `images` folder.
 2.  For each image, create a corresponding Python script in the `scripts` folder. This script will be executed when its associated image is detected.
 3.  Adjust settings in `master_values.json` as needed.
-4.  Run `auto_by_image.py` to start the automation.
+4.  Run `auto_by_image.py` to start the automation or use the GUI to start it.
 
 System Requirements
 -------------------
