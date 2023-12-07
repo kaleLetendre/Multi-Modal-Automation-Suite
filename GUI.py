@@ -37,8 +37,8 @@ def stop_script():
 
 def collapse():
     # remove all the buttons
-    capture_btn.pack_forget()
-    upload_btn.pack_forget()
+    image_btn.pack_forget()
+    script_btn.pack_forget()
     start_btn.pack_forget()
     stop_btn.pack_forget()
     collapse_btn.pack_forget()
@@ -53,8 +53,8 @@ def expand():
     expand_btn.pack_forget()
     # add all the buttons
     collapse_btn.pack(fill=tk.X)
-    capture_btn.pack(fill=tk.X)
-    upload_btn.pack(fill=tk.X)
+    image_btn.pack(fill=tk.X)
+    script_btn.pack(fill=tk.X)
     start_btn.pack(fill=tk.X)
     stop_btn.pack(fill=tk.X)
     root.attributes('-alpha', 1)
@@ -66,11 +66,13 @@ root = tk.Tk()
 root.overrideredirect(True)
 # force the window to be on top
 root.wm_attributes("-topmost", True)
+# dont show the window in the taskbar
+root.wm_attributes("-toolwindow", True)
 
 
 # Add buttons and layout
-capture_btn = tk.Button(root, text="Upload Image", command=upload_image)
-upload_btn = tk.Button(root, text="Upload Script", command=upload_file)
+image_btn = tk.Button(root, text="Upload Image", command=upload_image)
+script_btn = tk.Button(root, text="Upload Script", command=upload_file)
 start_btn = tk.Button(root, text="Play", command=start_script)
 stop_btn = tk.Button(root, text="Pause", command=stop_script, state=tk.DISABLED)
 collapse_btn = tk.Button(root, text="Hide", command=collapse)
@@ -78,8 +80,8 @@ expand_btn = tk.Button(root, text="+", command=expand)
 
 # arrange the buttons in a grid
 collapse_btn.pack(fill=tk.X)
-capture_btn.pack(fill=tk.X)
-upload_btn.pack(fill=tk.X)
+image_btn.pack(fill=tk.X)
+script_btn.pack(fill=tk.X)
 start_btn.pack(fill=tk.X)
 stop_btn.pack(fill=tk.X)
 
