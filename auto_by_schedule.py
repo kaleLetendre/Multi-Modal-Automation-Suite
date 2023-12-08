@@ -27,8 +27,6 @@ import time
 master_values = {}
 filename = 'master_values.json'
 while True:
-    current_time = datetime.datetime.now()
-    print(current_time)
     # read the master_values.json file
     try:
         try:
