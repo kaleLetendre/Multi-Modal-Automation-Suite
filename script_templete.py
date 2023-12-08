@@ -2,10 +2,14 @@
 import sys
 import json
 
-# read the top left and bottom right coordinates of the image
-top_left = (int(sys.argv[1]), int(sys.argv[2]))
-bottom_right = (int(sys.argv[3]), int(sys.argv[4]))
-
+# read the top left and bottom right coordinates of the image ONLY HAVE THESE IF IT IS AN IMAGE AUTOMATION
+try:
+    top_left = (int(sys.argv[1]), int(sys.argv[2]))
+    bottom_right = (int(sys.argv[3]), int(sys.argv[4]))
+except:
+    print('no coordinates given defaulting to 0, 0')
+    top_left = (0, 0)
+    bottom_right = (0, 0)
 # read the master_values.json file
 filename = 'master_values.json'
 master_values = {}
