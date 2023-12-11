@@ -13,22 +13,19 @@ filename = 'master_values.json'
 master_values = {}
 while True:
     # read the master_values.json file
+
     try:
-        try:
-            with open(filename, 'r') as f:
-                # get the values
-                master_values = json.load(f)
-        except:
-            print('master_values.json not found, creating it now')
-            with open(filename, 'w') as f:
-                master_values = {
-                    'auto_by_state_delay': 0.1
-                }
-                json.dump(master_values, f)
+        with open(filename, 'r') as f:
+            # get the values
+            master_values = json.load(f)
     except:
-        print('auto_by_image_delay not found in master_values.json, adding it now using default value of 0.1')
-        master_values['auto_by_state_delay'] = 0.1
-        with open('master_values.json', 'w') as f:
+        print('master_values.json not found, creating it now')
+        with open(filename, 'w') as f:
+            master_values = {
+                'auto_by_schedule_delay': 0.1,
+                'auto_by_state_delay': 0.1,
+                'auto_by_image_delay': 0.1
+            }
             json.dump(master_values, f)
 
     # iterate through the scripts in the scripts folder
@@ -37,6 +34,7 @@ while True:
     for script in scripts:
         name = script.split('.')[0]
         if "state_" in name:
+            name = name.split('state_')[1]
             if "^" in name:
                 # this is a script with multiple states
                 states = name.split('^')
@@ -44,9 +42,9 @@ while True:
                     state_name = state.split(';')[0]
                     desired_value = state.split(';')[1]
                     try:
-                        if master_values[state_name] == desired_value:
+                        if str(master_values[state_name]) == desired_value:
                             # run the script
-                            os.system('python3 scripts/' + script)
+                            os.system('python scripts/' + script)
                     except:
                         print('state not found')
             else:
@@ -54,9 +52,16 @@ while True:
                 state_name = name.split(';')[0]
                 desired_value = name.split(';')[1]
                 try:
-                    if master_values[state_name] == desired_value:
+                    if str(master_values[state_name]) == desired_value:
                         # run the script
-                        os.system('python3 scripts/' + script)
-                except:
+                        os.system('python scripts/' + script)
+                except Exception as e:
+                    print(e)
                     print('state not found')
-    time.sleep(master_values['auto_by_state_delay'])
+    try:
+        time.sleep(master_values['auto_by_state_delay'])
+    except:
+        print('auto_by_state_delay not found in master_values.json, adding it now using default value of 0.1')
+        master_values['auto_by_state_delay'] = 0.1
+        with open('master_values.json', 'w') as f:
+            json.dump(master_values, f)

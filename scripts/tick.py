@@ -22,9 +22,9 @@ except:
         json.dump(master_values, f)
 
 try:
-    master_values['tick'] = str(int(master_values['tick']) + 1)
+    master_values['tick'] = int(master_values['tick']) + 1
 except:
-    master_values['tick'] = '0'
+    master_values['tick'] = 0
 
 # write to the master_values.txt file
 with open('master_values.json', 'w') as f:

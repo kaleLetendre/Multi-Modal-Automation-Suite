@@ -80,8 +80,10 @@ while True:
             print('master_values.json not found, creating it now')
             with open(filename, 'w') as f:
                 master_values = {
-                    'auto_by_image_delay': 0.1
-                }
+                'auto_by_schedule_delay': 0.1,
+                'auto_by_state_delay': 0.1,
+                'auto_by_image_delay': 0.1
+            }
                 json.dump(master_values, f)
         time.sleep(master_values['auto_by_image_delay'])
     except:

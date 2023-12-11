@@ -27,24 +27,20 @@ import time
 master_values = {}
 filename = 'master_values.json'
 while True:
-    # read the master_values.json file
     try:
-        try:
-            with open(filename, 'r') as f:
-                # get the values
-                master_values = json.load(f)
-        except:
-            print('master_values.json not found, creating it now')
-            with open(filename, 'w') as f:
-                master_values = {
-                    'auto_by_schedule_delay': 0.1
-                }
-                json.dump(master_values, f)
+        with open(filename, 'r') as f:
+            # get the values
+            master_values = json.load(f)
     except:
-        print('auto_by_image_delay not found in master_values.json, adding it now using default value of 0.1')
-        master_values['auto_by_schedule_delay'] = 0.1
-        with open('master_values.json', 'w') as f:
+        print('master_values.json not found, creating it now')
+        with open(filename, 'w') as f:
+            master_values = {
+                'auto_by_schedule_delay': 0.1,
+                'auto_by_state_delay': 0.1,
+                'auto_by_image_delay': 0.1
+            }
             json.dump(master_values, f)
+
 
     # iterate through the scripts in the scripts folder
     scripts = os.listdir('scripts')
@@ -112,7 +108,14 @@ while True:
                 os.rename(f'scripts/{script}', f'scripts/rate_{rate_value};{rate_unit};{current_time}.py')
                 # run the script
                 os.system('python3 scripts/rate_' + rate_value + ';' + rate_unit + ';' + str(current_time) + '.py')
-    time.sleep(master_values['auto_by_schedule_delay'])      
+    try:
+        time.sleep(master_values['auto_by_schedule_delay'])
+    except:
+        print('auto_by_schedule_delay not found in master_values.json, adding it now using default value of 0.1')
+        master_values['auto_by_schedule_delay'] = 0.1
+        with open('master_values.json', 'w') as f:
+            json.dump(master_values, f)
+      
 
 
                 

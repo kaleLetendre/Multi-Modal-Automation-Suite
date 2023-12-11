@@ -23,7 +23,7 @@ def upload_file():
 
 def start_script():
     global script_process
-    script_process = subprocess.Popen(['python', 'auto_by_image.py'])
+    script_process = subprocess.Popen(['python', 'main.py'])
     #print("Script started.")
     start_btn.config(state=tk.DISABLED)
     stop_btn.config(state=tk.NORMAL)
