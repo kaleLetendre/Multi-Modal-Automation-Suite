@@ -70,14 +70,13 @@ def auto_by_image():
                 break
 
 while True:
-    auto_by_image()
     try:
         try:
             with open(filename, 'r') as f:
                 # get the values
                 master_values = json.load(f)
         except:
-            print('master_values.json not found, creating it now')
+            print('image master_values.json not found, creating it now')
             with open(filename, 'w') as f:
                 master_values = {
                 'auto_by_schedule_delay': 0.1,
@@ -85,9 +84,8 @@ while True:
                 'auto_by_image_delay': 0.1
             }
                 json.dump(master_values, f)
+        auto_by_image()
         time.sleep(master_values['auto_by_image_delay'])
-    except:
-        print('auto_by_image_delay not found in master_values.json, adding it now using default value of 0.1')
-        master_values['auto_by_image_delay'] = 0.1
-        with open('master_values.json', 'w') as f:
-            json.dump(master_values, f)
+    except Exception as e:
+        print(e, 'sleeping for 0.1 seconds')
+        time.sleep(0.1)

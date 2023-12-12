@@ -9,4 +9,4 @@ def run_command(command):
 with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_cores) as executor:
     for auto_by in os.listdir('auto_by'):
             future= executor.submit(run_command,'python auto_by/'+auto_by)
-            print('running' + auto_by)
+            print('running ' + auto_by)
