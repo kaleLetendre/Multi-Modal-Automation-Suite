@@ -4,9 +4,12 @@ import pyautogui
 import cv2
 import numpy as np
 import time
-import concurrent.futures
 import json
 import multiprocessing
+import asyncio
+import cProfile
+import pstats
+
 cpu_cores = multiprocessing.cpu_count()
 global master_values
 filename = 'master_values.json'
@@ -18,15 +21,30 @@ def load_master_values():
 class auto_by_image:
     def __init__(self):
         self.filename = 'master_values.json'
-    def process_image(self,image_name, sample_image):
-        # read the image
-        template_image = cv2.imread(f'images/{image_name}')
+        self.template_images = self.load_template_images()
+
+    def load_template_images(self):
+        templates = {}
+        for image_name in os.listdir('images'):
+            template = cv2.imread(f'images/{image_name}')
+            templates[image_name] = template
+        return templates
+    def reduce_resolution(self, image, scale_percent):
+        width = int(image.shape[1] * scale_percent / 100)
+        height = int(image.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+        return cv2.resize(resized, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_AREA)
+
+    async def process_image(self, image_name, sample_image):
+        template_image = self.template_images[image_name]
+        template_image = self.reduce_resolution(template_image, 80)  # Example: reducing resolution by 50%
+        sample_image = self.reduce_resolution(sample_image, 80)
         # get the coordinates
         coordinates = self.locate_area(sample_image, template_image)
         # if coordinates are found
         if coordinates:
-            # run the corresponding script with the top left coordinates and bottom right coordinates passed as 4 seperate command line arguments
-            os.system(f'python scripts/{image_name[:-4]}.py {coordinates[0][0]} {coordinates[0][1]} {coordinates[0][0] + coordinates[0][2]} {coordinates[0][1] + coordinates[0][3]}')
+            await asyncio.create_subprocess_shell(f'python scripts/{image_name[:-4]}.py {coordinates[0][0]} {coordinates[0][1]} {coordinates[0][0] + coordinates[0][2]} {coordinates[0][1] + coordinates[0][3]}')
             return True
         return False
     def screen_capture(self):
@@ -52,21 +70,22 @@ class auto_by_image:
             coordinates.append([x, y, width, height])
         # return coordinates
         return coordinates
-    def run_auto_by_image(self):
-        # get screenshot
+    async def run_auto_by_image(self):
         sample_image = self.screen_capture()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_cores) as executor:
-            for image_name in os.listdir('images'):
-                future = executor.submit(self.process_image, image_name, sample_image)
-                if future.result():
-                    break
+        tasks = [self.process_image(image_name, sample_image) for image_name in self.template_images]
+        await asyncio.gather(*tasks)
         return True
 
 class auto_by_state:
     def __init__(self):
         self.filename = 'master_values.json'
         self.master_values = load_master_values()
-    def process_state(self,script):
+        self.scripts = os.listdir('scripts')
+        for script in self.scripts:
+            # remove scripts that are not states
+            if "state_" not in script:
+                self.scripts.remove(script)
+    async def process_state(self,script):
         name = script.split('state_')[1]
         name = name.split('.')[0]
         if "^" in name:
@@ -78,7 +97,7 @@ class auto_by_state:
                 try:
                     if str(master_values[state_name]) == desired_value:
                         # run the script
-                        os.system('python scripts/' + script)
+                        await asyncio.create_subprocess_shell(f'python scripts/{script}')
                 except:
                     print('state not found')
         else:
@@ -87,25 +106,37 @@ class auto_by_state:
             desired_value = name.split(';')[1]
             if str(self.master_values[state_name]) == desired_value:
                 # run the script
-                os.system('python scripts/' + script)
-        return
-    def auto_by_state(self):
-        self.master_values = load_master_values()
-        scripts = os.listdir('scripts')
+                await asyncio.create_subprocess_shell(f'python scripts/{script}')
+                return
+    async def run_auto_by_state(self):
+        loaded = False
+        while not loaded:
+            try:
+                self.master_values = load_master_values()
+                loaded = True
+            except:
+                pass
         # loop through all the images in the folder
-        with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_cores) as executor:
-            for script in scripts:
-                name = script.split('.')[0]
-                if "state_" in name:
-                    future = executor.submit(self.process_state, script)
-                    if future.result():
-                        break
+        for script in self.scripts:
+            name = script.split('.')[0]
+            if "state_" in name:
+                await self.process_state(script)
         return True
 
 class auto_by_schedule:
     def __init__(self):
-        pass
-    def process_schedule(self,script):
+        self.scripts = os.listdir('scripts')
+        self.schedule_scripts = []
+        self.rate_scripts = []
+        for script in self.scripts:
+            # remove scripts that are not schedules or rates
+            if "schedule_" not in script and "rate_" not in script:
+                self.scripts.remove(script)
+            elif "schedule_" in script:
+                self.schedule_scripts.append(script)
+            elif "rate_" in script:
+                self.rate_scripts.append(script)
+    async def process_schedule(self,script):
         name = script.split('schedule_')[1]
         name = name.split('.')[0]
         # get the current time and date in UTC 
@@ -132,9 +163,9 @@ class auto_by_schedule:
                     break
         if trigger:
             # run the script
-            os.system('python3 scripts/' + script)
+            await asyncio.create_subprocess_shell(f'python scripts/{script}')
         return
-    def process_rate(self,script, average_latency = 0):
+    async def process_rate(self,script, average_latency = 0):
         name = script.split('rate_')[1]
         if len(name.split('.')) > 2:
             # join 0 and 1
@@ -173,42 +204,61 @@ class auto_by_schedule:
         if time_diff + average_latency >= int(rate_value):
             # rename the script with the current unix time
             os.rename(f'scripts/{script}', f'scripts/rate_{rate_value};{rate_unit};{current_time}.py')
+            # change the name of the script in the list
+            self.rate_scripts[self.rate_scripts.index(script)] = f'rate_{rate_value};{rate_unit};{current_time}.py'
             # run the script
-            os.system('python scripts/rate_' + rate_value + ';' + rate_unit + ';' + str(current_time) + '.py')
+            await asyncio.create_subprocess_shell(f'python scripts/rate_{rate_value};{rate_unit};{current_time}.py')
         return
-    def run_auto_by_schedule(self, average_latency):
-        # get scripts
-        scripts = os.listdir('scripts')
+    async def run_auto_by_schedule(self, average_latency):
         # loop through all the images in the folder
-        with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_cores) as executor:
-            for script in scripts:
-                name = script.split('.')[0]
-                if "schedule_" in name:
-                    future = executor.submit(self.process_schedule, script)
-                    if future.result():
-                        break
-                elif "rate_" in name:
-                    future = executor.submit(self.process_rate, script, average_latency)
-                    if future.result():
-                        break
+        for script in self.schedule_scripts:
+            name = script.split('.')[0]
+            await self.process_schedule(script)
+        for script in self.rate_scripts:
+            name = script.split('.')[0]
+            await self.process_rate(script, average_latency)
         return True
-runs = 0
-total_latency = 0
-while True:
-    runs += 1
-    try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_cores) as executor:
-            start_time = time.time()
-            future1 = executor.submit(auto_by_image().run_auto_by_image)
-            future2 = executor.submit(auto_by_state().auto_by_state)
-            future3 = executor.submit(auto_by_schedule().run_auto_by_schedule, total_latency/runs)
-            if future1.result():
-                print(str(time.time() - start_time), end=' | ')
-            if future2.result():
-                print(str(time.time() - start_time), end=' | ')
-            if future3.result():
-                print(str(time.time() - start_time), end=' | ')
-        print(str(time.time() - start_time), end='\r')
-        total_latency += time.time() - start_time
-    except Exception as e:
-        print(e)
+
+async def main():
+    auto_image = auto_by_image()
+    auto_state = auto_by_state()
+    auto_schedule = auto_by_schedule()  # Assuming you have this class
+    runs = 0
+    total_latency = 0
+
+    while True:
+        runs += 1
+        start_time = time.time()
+
+        # Execute asynchronous tasks and wait for them to complete
+        await asyncio.gather(
+            auto_state.run_auto_by_state(),
+            auto_schedule.run_auto_by_schedule(total_latency / runs if runs != 0 else 0)
+        )
+
+        # Calculate latency and print it
+        latency = time.time() - start_time
+        print(f"Average Latency: {total_latency/runs:.2f} seconds", end='\r')
+        # if latency < 0.1:
+        #     await asyncio.sleep(0.01 - latency)
+        #     latency = 0.1
+        total_latency += latency
+
+# Run the main function
+asyncio.run(main())
+
+# async def main():
+#     # Your main function logic here
+#     auto_image = auto_by_image()
+#     await auto_image.run_auto_by_image()
+
+# # Profiling the main function
+# if __name__ == "__main__":
+#     profiler = cProfile.Profile()
+#     profiler.enable()
+
+#     asyncio.run(main())
+
+#     profiler.disable()
+#     stats = pstats.Stats(profiler).sort_stats('cumtime')
+#     stats.print_stats()
