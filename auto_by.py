@@ -230,18 +230,14 @@ async def main():
         runs += 1
         start_time = time.time()
 
-        # Execute asynchronous tasks and wait for them to complete
-        await asyncio.gather(
-            auto_state.run_auto_by_state(),
-            auto_schedule.run_auto_by_schedule(total_latency / runs if runs != 0 else 0)
-        )
-
-        # Calculate latency and print it
+        # execute the tasks concurrently
+        tasks = [auto_image.run_auto_by_image(), auto_state.run_auto_by_state(), auto_schedule.run_auto_by_schedule(total_latency/runs)]
+        await asyncio.gather(*tasks)
         latency = time.time() - start_time
         print(f"Average Latency: {total_latency/runs:.2f} seconds", end='\r')
-        # if latency < 0.1:
-        #     await asyncio.sleep(0.01 - latency)
-        #     latency = 0.1
+        if latency < 0.1:
+            await asyncio.sleep(0.01 - latency)
+            latency = 0.1
         total_latency += latency
 
 # Run the main function
