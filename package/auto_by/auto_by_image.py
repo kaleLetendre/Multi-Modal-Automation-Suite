@@ -4,26 +4,24 @@ import cv2
 import numpy as np
 import time
 import concurrent.futures
-import json
 import multiprocessing
-
 # Detect the number of CPU cores to set the optimal number of threads for concurrency
 cpu_cores = multiprocessing.cpu_count()
-
-filename = 'master_values.json'
-master_values = {}
-
+current_directory = os.path.dirname(os.path.realpath(__file__))
+parent_directory = os.path.dirname(current_directory).replace('\\', '/')
+# settings.init()
+master_values = settings.get_master_values()    
 
 
 def process_image(image_name, sample_image):
     # read the image
-    template_image = cv2.imread(f'images/{image_name}')
+    template_image = cv2.imread(f'{parent_directory}/images/{image_name}')
     # get the coordinates
     coordinates = locate_area(sample_image, template_image)
     # if coordinates are found
     if coordinates:
         # run the corresponding script with the top left coordinates and bottom right coordinates passed as 4 seperate command line arguments
-        os.system(f'python scripts/{image_name[:-4]}.py {coordinates[0][0]} {coordinates[0][1]} {coordinates[0][0] + coordinates[0][2]} {coordinates[0][1] + coordinates[0][3]}')
+        os.system(f'python -m package.scripts.{image_name.split(".")[0]} {coordinates[0][0]} {coordinates[0][1]} {coordinates[0][0] + coordinates[0][2]} {coordinates[0][1] + coordinates[0][3]}')
         return True
     return False
 
@@ -35,7 +33,7 @@ def screen_capture():
     # Convert RGB to BGR
     img = img[:, :, ::-1].copy()
     return img
-def locate_area(sample_image, template_image, threshold=0.8):
+def locate_area(sample_image, template_image, threshold=0.5):
     # find template in sample image
     result = cv2.matchTemplate(sample_image, template_image, cv2.TM_CCOEFF_NORMED)
     # get the coordinates of the template
@@ -64,28 +62,12 @@ def auto_by_image():
     sample_image = screen_capture()
     # loop through all the images in the folder
     with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_cores) as executor:
-        for image_name in os.listdir('images'):
+        for image_name in os.listdir(parent_directory + '/images'):
             future = executor.submit(process_image, image_name, sample_image)
-            if future.result():
-                break
 
 while True:
-    try:
-        try:
-            with open(filename, 'r') as f:
-                # get the values
-                master_values = json.load(f)
-        except:
-            print('image master_values.json not found, creating it now')
-            with open(filename, 'w') as f:
-                master_values = {
-                'auto_by_schedule_delay': 0.1,
-                'auto_by_state_delay': 0.1,
-                'auto_by_image_delay': 0.1
-            }
-                json.dump(master_values, f)
+    # try:
         auto_by_image()
         time.sleep(master_values['auto_by_image_delay'])
-    except Exception as e:
-        print(e, 'sleeping for 0.1 seconds')
-        time.sleep(0.1)
+    # except Exception as e:
+    #     time.sleep(0.1)

@@ -1,1 +1,1 @@
-{"auto_by_schedule_delay": 0.1, "auto_by_state_delay": 0.1, "auto_by_image_delay": 0.1, "seconds": 13, "minutes": 3}
+{"auto_by_schedule_delay": 0.1, "auto_by_state_delay": 0.1, "auto_by_image_delay": 0.1, "init_has_run": true}

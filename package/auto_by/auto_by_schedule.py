@@ -20,13 +20,15 @@
 
 import datetime
 import concurrent.futures
-import json
 import multiprocessing
 import os
 import time
+# import the settings module from the above package
+import settings
+current_directory = os.path.dirname(os.path.realpath(__file__))
+parent_directory = os.path.dirname(current_directory).replace('\\', '/')
+
 cpu_cores = multiprocessing.cpu_count()
-filename = 'master_values.json'
-master_values = {}
 def process_schedule(script):
     name = script.split('schedule_')[1]
     name = name.split('.')[0]
@@ -53,8 +55,8 @@ def process_schedule(script):
                 trigger = False
                 break
     if trigger:
-        # run the script
-        os.system('python3 scripts/' + script)
+        # pass 
+        os.system('python -m package.scripts.' + script.split('.')[0])
     return
 def process_rate(script):
     name = script.split('rate_')[1]
@@ -72,7 +74,7 @@ def process_rate(script):
     # get the last run time
     last_run = name.split(';')[2]
     # get the time diff
-    time_diff = current_time - float(last_run)
+    time_diff = current_time - float(last_run/10)
     # get the time diff in seconds
     if rate_unit == 'ss':
         time_diff = time_diff * 10
@@ -90,50 +92,33 @@ def process_rate(script):
         time_diff = time_diff / 2628000
     elif rate_unit == 'y':
         time_diff = time_diff / 31536000
-        
+
     # check if the time diff is greater than the rate
+    
     if time_diff >= int(rate_value):
         # rename the script with the current unix time
-        os.rename(f'scripts/{script}', f'scripts/rate_{rate_value};{rate_unit};{current_time}.py')
-        # run the script
-        os.system('python scripts/rate_' + rate_value + ';' + rate_unit + ';' + str(current_time) + '.py')
+        os.rename(f'{parent_directory}/scripts/{script}', f'{parent_directory}/scripts/rate_{rate_value};{rate_unit};{int(current_time*10)}.py')
+        os.system('python -m package.scripts.rate_' + rate_value + ';' + rate_unit + ';' + str(int(current_time*10)))
+        print('done')
     return
 def auto_by_schedule():
     # get scripts
-    scripts = os.listdir('scripts')
+    scripts = os.listdir(parent_directory + '/scripts')
     # loop through all the images in the folder
     with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_cores) as executor:
         for script in scripts:
             name = script.split('.')[0]
             if "schedule_" in name:
                 future = executor.submit(process_schedule, script)
-                if future.result():
-                    break
             elif "rate_" in name:
                 future = executor.submit(process_rate, script)
-                if future.result():
-                    break
 while True:
     try:
-        try:
-            with open(filename, 'r') as f:
-                # get the values
-                master_values = json.load(f)
-        except:
-            print('schedule master_values.json not found, creating it now')
-            with open(filename, 'w') as f:
-                master_values = {
-                    'auto_by_schedule_delay': 0.1,
-                    'auto_by_state_delay': 0.1,
-                    'auto_by_image_delay': 0.1
-                }
-                json.dump(master_values, f)
         auto_by_schedule()
-        time.sleep(master_values['auto_by_schedule_delay'])
+        time.sleep(settings.master_values_main['auto_by_schedule_delay'])
     except Exception as e:
-        print(e, 'sleeping for 0.1 seconds')
+        print(e)
         time.sleep(0.1)
-      
 
 
                 

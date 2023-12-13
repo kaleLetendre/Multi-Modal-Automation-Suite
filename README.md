@@ -18,7 +18,7 @@ Features
 --------
 
 * **Concurrent Processing**: Utilizes multi-threading to enhance performance, particularly in systems with multiple CPU cores.
-* **Dynamic Configuration**: Configurable settings are read from `master_values.json`. This includes the delay between screen captures and other potential settings.
+* **Dynamic Configuration**: Configurable settings are read from `master_values.json`. This includes the delay between screen captures and other potential 
 * **GPU Acceleration (Future Enhancement)**: Plans to incorporate GPU acceleration for systems with compatible hardware, to further improve image processing speeds.
 
 Setup and Usage
