@@ -1,48 +1,37 @@
-Automation System Overview
-==========================
+# Multi-Modal Automation Suite
 
-Introduction
-------------
+## Introduction
 
-This automation system continuously monitors your computer screen for specific images and executes associated Python scripts when these images are detected. It's ideal for tasks like automated testing, monitoring, or gaming where specific visual cues trigger actions.
+This Multi-Modal Automation Suite is a versatile and powerful tool designed for automated interactions with your computer, leveraging visual cues, state-based logic, and scheduled tasks. Ideal for a broad range of applications including automated testing, interactive monitoring, and gaming, this suite stands out with its ability to adapt to various triggers and scenarios.
 
-How it Works
-------------
+## Core Components
 
-* The main script, `auto_by_image.py`, runs in an infinite loop, capturing screenshots and analyzing them. These screenshots are temporarily stored in RAM for processing.
-* If a screenshot contains an area that matches at least 80% with any image in the `images` folder, the corresponding script in the `scripts` folder (with the same name as the image) is executed.
-* For example, if `tick.png` is detected on the screen, `tick.py` will be executed, and the script will receive the coordinates of where the image was found.
-* Please look at the headers in the auto_by_state and auto_by_schedule python files for the specific use and format of these features
+* **Image-Based Automation (`auto_by_image.py`)** : Captures the screen in real-time and executes scripts when predefined images are detected. This component is crucial for tasks that require visual cue-based automation.
+* **State-Driven Tasks (`auto_by_state.py`)** : Executes scripts based on the specific state conditions defined in `master_values.json`, allowing for complex, conditional automation workflows.
+* **Scheduled Actions (`auto_by_schedule.py`)** : Manages and triggers tasks at pre-set times or intervals, adding a time-based dimension to the automation capabilities.
 
-Features
---------
+## Features
 
-* **Concurrent Processing**: Utilizes multi-threading to enhance performance, particularly in systems with multiple CPU cores.
-* **Dynamic Configuration**: Configurable settings are read from `master_values.json`. This includes the delay between screen captures and other potential settings.
-* **GPU Acceleration (Future Enhancement)**: Plans to incorporate GPU acceleration for systems with compatible hardware, to further improve image processing speeds.
+* **Versatile Task Handling** : Seamlessly handles a variety of tasks, from simple script execution upon image recognition to complex, conditional logic and time-based operations.
+* **Asynchronous and Concurrent Processing** : Built with Python’s asyncio library, enhancing performance through efficient task management.
+* **Dynamic Configuration** : Customizable through `master_values.json` for tailored operational control.
+* **Planned GPU Acceleration** : Future updates aim to incorporate GPU acceleration, promising further improvements in processing efficiency, particularly in image recognition tasks.
 
-Setup and Usage
----------------
+## Setup and Usage
 
-*please give credit and link the project if it is used in anything else*
+1. Fill the `images` folder with target images for monitoring.
+2. Create corresponding Python scripts in the `scripts` folder; these will execute when matching images are detected.
+3. Create state and schedule scripts in the `scripts` folder.
+4. Configure operational parameters in `master_values.json` according to your needs.
+5. Launch `auto_by.py`
 
-1. Place the images you want to monitor in the `images` folder.
-2. For each image, create a corresponding Python script in the `scripts` folder. This script will be executed when its associated image is detected.
-3. Adjust settings in `master_values.json` as needed.
-4. Run `auto_by_image.py` to start the automation or use the GUI to start it.
+## System Requirements
 
-System Requirements
--------------------
+* A Python environment with necessary libraries such as pyautogui and opencv-python.
+* (Optional) OpenCV with GPU support for future performance enhancements.
 
-* Python environment with required libraries (`pyautogui`, `opencv-python`, etc.).
-* Optional: OpenCV with GPU support for future enhancements.
+## Support the Creator
 
-Contributing
-------------
+To support the development and enhancement of this project, consider visiting [Buy Me a Coffee](https://www.buymeacoffee.com/kaleletendw).
 
-Contributions to enhance this project, such as adding GPU support or improving image processing algorithms, are welcome. Please follow standard GitHub pull request procedures.
-
-Support the creator
--------------------
-
-https://www.buymeacoffee.com/kaleletendw
+*Note: Please give credit and link back to this project if it is used elsewhere.*
