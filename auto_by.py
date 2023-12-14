@@ -15,14 +15,22 @@ global master_values
 filename = 'master_values.json'
 active = {"auto_by_image": False, "auto_by_state": False, "auto_by_schedule": False}
 def load_master_values():
-    with open(filename, 'r') as f:
-        # get the values
-        master_values = json.load(f)
+    try:
+        with open('master_values.json', 'r') as f:
+            # get the values
+            master_values = json.load(f)
+    except FileNotFoundError:
+        # create the file
+        with open('master_values.json', 'w') as f:
+            # create the file
+            master_values = {}
+            json.dump(master_values, f)
     return master_values
 class auto_by_image:
     def __init__(self):
         self.filename = 'master_values.json'
         self.template_images = self.load_template_images()
+        self.master_values = load_master_values()
 
     def load_template_images(self):
         templates = {}
@@ -110,7 +118,6 @@ class auto_by_state:
                 await asyncio.create_subprocess_shell(f'python scripts/{script}')
                 return
     async def run(self):
-        self.master_values = load_master_values()
         for script in self.scripts:
             name = script.split('.')[0]
             if "state_" in name:
@@ -122,6 +129,7 @@ class auto_by_schedule:
         self.scripts = os.listdir('scripts')
         self.schedule_scripts = []
         self.rate_scripts = []
+        self.master_values = load_master_values()
         for script in self.scripts:
             # remove scripts that are not schedules or rates
             if "schedule_" not in script and "rate_" not in script:
@@ -212,26 +220,30 @@ class auto_by_schedule:
             name = script.split('.')[0]
             await self.process_rate(script, average_latency)
         return True
-
-def main():
+    
+def main(image, state, schedule):
     auto_image = auto_by_image()
     auto_state = auto_by_state()
     auto_schedule = auto_by_schedule()  # Assuming you have this class
     runs = 0
     total_latency = 0
+    runs += 1
+    start_time = time.time()
 
-    while True:
-        runs += 1
-        start_time = time.time()
-
-        # execute the tasks concurrently
-        tasks = [auto_image.run(), auto_state.run(), auto_schedule.run(total_latency/runs)]
-        asyncio.gather(*tasks)
-        latency = time.time() - start_time
-        print(f"Average Latency: {total_latency/runs:.2f} seconds", end='\r')
-        if latency < 0.1:
-            asyncio.sleep(0.01 - latency)
-            latency = 0.1
-        total_latency += latency
+    # execute the tasks concurrently
+    tasks = []
+    if image:
+        tasks.append(auto_image.run())
+    if state:
+        tasks.append(auto_state.run())
+    if schedule:
+        tasks.append(auto_schedule.run(total_latency/runs))
+    asyncio.gather(*tasks)
+    latency = time.time() - start_time
+    print(f"Average Latency: {total_latency/runs:.2f} seconds", end='\r')
+    if latency < 0.1:
+        asyncio.sleep(0.01 - latency)
+        latency = 0.1
+    total_latency += latency
 
 
