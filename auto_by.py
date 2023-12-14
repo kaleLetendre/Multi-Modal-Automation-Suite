@@ -110,14 +110,7 @@ class auto_by_state:
                 await asyncio.create_subprocess_shell(f'python scripts/{script}')
                 return
     async def run(self):
-        loaded = False
-        while not loaded:
-            try:
-                self.master_values = load_master_values()
-                loaded = True
-            except:
-                pass
-        # loop through all the images in the folder
+        self.master_values = load_master_values()
         for script in self.scripts:
             name = script.split('.')[0]
             if "state_" in name:
@@ -241,8 +234,4 @@ def main():
             latency = 0.1
         total_latency += latency
 
-def run_automations():
-    # run the main function in a separate thread
-    main_thread = multiprocessing.Process(target=main)
-    main_thread.start()
-    return main_thread
+

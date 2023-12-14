@@ -25,21 +25,17 @@ class AutomationGUI:
         master.grid_rowconfigure(2, weight=1)
 
         # Styling Configuration
-        button_style = {'bg': '#4c8bf5', 'fg': 'white', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        start_button_style = {'bg': '#4cf554', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        stop_button_style = {'bg': '#f54c4c', 'fg': 'white', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
         config_editor_style = {'bg': '#f0f0f0', 'fg': '#333', 'insertbackground': 'black'}
 
         # Button Creation and Placement
-        self.start_img_btn = self.create_button("Start Image Automation", self.start_image_automation, 0, 0, button_style)
-        self.stop_img_btn = self.create_button("Stop Image Automation", self.stop_image_automation, 0, 0, button_style, True)
-        self.start_state_btn = self.create_button("Start State Automation", self.start_state_automation, 0, 1, button_style)
-        self.stop_state_btn = self.create_button("Stop State Automation", self.stop_state_automation, 0, 1, button_style, True)
-        self.start_schedule_btn = self.create_button("Start Schedule Automation", self.start_schedule_automation, 0, 2, button_style)
-        self.stop_schedule_btn = self.create_button("Stop Schedule Automation", self.stop_schedule_automation, 0, 2, button_style, True)
-
-
-        # Status Display
-        self.status_display = scrolledtext.ScrolledText(master, height=10, **config_editor_style)
-        self.status_display.grid(row=1, column=0, columnspan=3, sticky="nsew", padx=5, pady=5)
+        self.start_img_btn = self.create_button("Start Image Automation", self.start_image_automation, 0, 0, start_button_style)
+        self.stop_img_btn = self.create_button("Stop Image Automation", self.stop_image_automation, 0, 0, stop_button_style, True)
+        self.start_state_btn = self.create_button("Start State Automation", self.start_state_automation, 0, 1, start_button_style)
+        self.stop_state_btn = self.create_button("Stop State Automation", self.stop_state_automation, 0, 1, stop_button_style, True)
+        self.start_schedule_btn = self.create_button("Start Schedule Automation", self.start_schedule_automation, 0, 2, start_button_style)
+        self.stop_schedule_btn = self.create_button("Stop Schedule Automation", self.stop_schedule_automation, 0, 2, stop_button_style, True)
 
         # Configuration Editor
         self.config_editor = scrolledtext.ScrolledText(master, height=10, **config_editor_style)
@@ -92,7 +88,6 @@ class AutomationGUI:
         while self.image_automation_running:
             asyncio.run(self.auto_image.run())
         
-    
     def start_state_automation(self):
         # Start state-based automation logic
         self.state_automation_running = True
@@ -111,7 +106,6 @@ class AutomationGUI:
         while self.state_automation_running:
             asyncio.run(self.auto_state.run())
         
-
     def start_schedule_automation(self):
         # Start schedule-based automation logic
         
@@ -135,7 +129,13 @@ class AutomationGUI:
             asyncio.run(self.auto_schedule.run((time.time() - start_time)/runs))
             runs += 1
 
+    def on_closing(self):
+        self.master.destroy()
+        exit()
+
 root = tk.Tk()
 gui = AutomationGUI(root)
+root.protocol("WM_DELETE_WINDOW", gui.on_closing)
+
 root.mainloop()
 
