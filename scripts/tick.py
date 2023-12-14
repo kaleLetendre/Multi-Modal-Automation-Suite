@@ -9,17 +9,9 @@ bottom_right = (int(sys.argv[3]), int(sys.argv[4]))
 # read the master_values.json file
 filename = 'master_values.json'
 master_values = {}
-try:
-    with open(filename, 'r') as f:
-        # get the values
-        master_values = json.load(f)
-except:
-    print('master_values.json not found, creating it now')
-    with open(filename, 'w') as f:
-        master_values = {
-            'auto_by_image_delay': 0.1
-        }
-        json.dump(master_values, f)
+with open(filename, 'r') as f:
+    # get the values
+    master_values = json.load(f)
 
 try:
     master_values['tick'] = int(master_values['tick']) + 1

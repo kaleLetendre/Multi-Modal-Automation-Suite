@@ -13,17 +13,9 @@ except:
 # read the master_values.json file
 filename = 'master_values.json'
 master_values = {}
-try:
-    with open(filename, 'r') as f:
-        # get the values
-        master_values = json.load(f)
-except:
-    print('master_values.json not found, creating it now')
-    with open(filename, 'w') as f:
-        master_values = {
-            'auto_by_image_delay': 0.1
-        }
-        json.dump(master_values, f)
+with open(filename, 'r') as f:
+    # get the values
+    master_values = json.load(f)
 
 # ______________________________CODE GOES HERE____________________________________
 # use the coordinates and master_values to do whatever you want

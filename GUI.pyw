@@ -39,16 +39,6 @@ class AutomationGUI:
         self.stop_schedule_btn = self.create_button("Stop Schedule Automation", self.stop_schedule_automation, 1, 2, stop_button_style, True)
 
         # Configuration Editor
-        self.config_editor = scrolledtext.ScrolledText(master, height=10, **config_editor_style)
-        self.config_editor.grid(row=2, column=0, columnspan=3, sticky="nsew", padx=5, pady=5)
-        self.config_editor.tag_configure("json", foreground="blue")
-        self.config_editor.tag_configure("string", foreground="green")
-        self.config_editor.tag_configure("number", foreground="red")
-        self.config_editor.tag_configure("boolean", foreground="orange")
-
-        # Config live-update thread
-        config_thread = threading.Thread(target=self.load_config)
-        config_thread.start()
         auto_by_thread = threading.Thread(target=self.run_auto_bys)
         auto_by_thread.start()
 
@@ -158,10 +148,10 @@ class AutomationGUI:
             self.auto_state.master_values = master_values
             self.auto_schedule.master_values = master_values
             runs += 1
-            if self.image_automation_running:
-                asyncio.run(self.auto_image.run())
             if self.state_automation_running:
                 asyncio.run(self.auto_state.run())
+            if self.image_automation_running:
+                asyncio.run(self.auto_image.run())
             if self.schedule_automation_running:
                 asyncio.run(self.auto_schedule.run((time.time() - start_time)/runs))
             latency = (time.time() - start_time)/runs
