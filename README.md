@@ -32,6 +32,6 @@ This Multi-Modal Automation Suite is a versatile and powerful tool designed for 
 
 ## Support the Creator
 
-To support the development and enhancement of this project, consider visiting [Buy Me a Coffee](https://www.buymeacoffee.com/kaleletendw).
+To support the development and enhancement of this project, consider visiting [Buy Me a Coffee](https://www.buymeacoffee.com/kaleletendre).
 
 *Note: Please give credit and link back to this project if it is used elsewhere.*
