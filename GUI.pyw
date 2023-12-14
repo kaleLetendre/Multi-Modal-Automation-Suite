@@ -1,116 +1,141 @@
+import asyncio
+import threading
+import time
 import tkinter as tk
-from tkinter import filedialog
-import os
-import subprocess
-import shutil
-import pyautogui
+from tkinter import scrolledtext
+import auto_by
+class AutomationGUI:
+    def __init__(self, master):
+        self.master = master
+        master.title("Automation System")
+        master.configure(bg='white')
 
-def upload_image():
-    # get the file (any file)
-    filename = filedialog.askopenfilename(title="Select an Image", filetypes=(("Image files", "*.png;*.jpg;*.jpeg"), ("All files", "*.*")))
-    # copy the file to the images folder and change the name to the name in the name_input
-    shutil.copy(filename, f'images/{name_input.get()}.jpg')
-    #print(f'Copied {filename} to images folder')
+        # Initialize flags for running states
+        self.image_automation_running = False
+        self.state_automation_running = False
+        self.schedule_automation_running = False
+
+        # Create auto_by instances
+        self.auto_image = auto_by.auto_by_image()
+        self.auto_state = auto_by.auto_by_state()
+        self.auto_schedule = auto_by.auto_by_schedule()
+
+        # Grid layout configuration
+        master.grid_columnconfigure(3, weight=1)
+        master.grid_rowconfigure(2, weight=1)
+
+        # Styling Configuration
+        button_style = {'bg': '#4c8bf5', 'fg': 'white', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        config_editor_style = {'bg': '#f0f0f0', 'fg': '#333', 'insertbackground': 'black'}
+
+        # Button Creation and Placement
+        self.start_img_btn = self.create_button("Start Image Automation", self.start_image_automation, 0, 0, button_style)
+        self.stop_img_btn = self.create_button("Stop Image Automation", self.stop_image_automation, 0, 0, button_style, True)
+        self.start_state_btn = self.create_button("Start State Automation", self.start_state_automation, 0, 1, button_style)
+        self.stop_state_btn = self.create_button("Stop State Automation", self.stop_state_automation, 0, 1, button_style, True)
+        self.start_schedule_btn = self.create_button("Start Schedule Automation", self.start_schedule_automation, 0, 2, button_style)
+        self.stop_schedule_btn = self.create_button("Stop Schedule Automation", self.stop_schedule_automation, 0, 2, button_style, True)
 
 
-def upload_file():
-    # get the script file
-    filename = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("python files","*.py"),("all files","*.*")))
-    # copy the file to the scripts folder and change the name to the name in the name_input
-    shutil.copy(filename, f'scripts/{name_input.get()}.py')
-    #print(f'Copied {filename} to scripts folder')
+        # Status Display
+        self.status_display = scrolledtext.ScrolledText(master, height=10, **config_editor_style)
+        self.status_display.grid(row=1, column=0, columnspan=3, sticky="nsew", padx=5, pady=5)
+
+        # Configuration Editor
+        self.config_editor = scrolledtext.ScrolledText(master, height=10, **config_editor_style)
+        self.config_editor.grid(row=2, column=0, columnspan=3, sticky="nsew", padx=5, pady=5)
+        self.config_editor.tag_configure("json", foreground="blue")
+        self.config_editor.tag_configure("string", foreground="green")
+        self.config_editor.tag_configure("number", foreground="red")
+        self.config_editor.tag_configure("boolean", foreground="orange")
+
+        # Config live-update thread
+        config_thread = threading.Thread(target=self.load_config)
+        config_thread.start()
+
+    def create_button(self, text, command, row, column, style, hide=False, name=""):
+        button = tk.Button(self.master, text=text, command=command, **style)
+        button.grid(row=row, column=column, sticky="ew", padx=5, pady=5)
+        if hide:
+            button.grid_remove()
+        button.name = name
+        return button
     
-
-def start_script():
-    global script_process
-    script_process = subprocess.Popen(['python', 'auto_by.py'])
-    #print("Script started.")
-    start_btn.config(state=tk.DISABLED)
-    stop_btn.config(state=tk.NORMAL)
-
-def stop_script():
-    global script_process
-    if script_process:
-        script_process.terminate()
-        #print("Script stopped.")
-        start_btn.config(state=tk.NORMAL)
-        stop_btn.config(state=tk.DISABLED)
-
-def collapse():
-    # remove all the buttons
-    image_btn.pack_forget()
-    script_btn.pack_forget()
-    start_btn.pack_forget()
-    stop_btn.pack_forget()
-    collapse_btn.pack_forget()
-    name_input.pack_forget()
-    # add the expand button
-    expand_btn.pack(fill=tk.X)
-    # set the alpha to 0.5
-    root.attributes('-alpha', 0.5)
-
-
-def expand():
-    # remove the expand button
-    expand_btn.pack_forget()
-    # add all the buttons
-    collapse_btn.pack(fill=tk.X)
-    name_input.pack(fill=tk.X)
-    image_btn.pack(fill=tk.X)
-    script_btn.pack(fill=tk.X)
-    start_btn.pack(fill=tk.X)
-    stop_btn.pack(fill=tk.X)
-    root.attributes('-alpha', 1)
+    def load_config(self):
+        # Load configuration data into the editor
+        while True:
+            try:
+                self.config_editor.delete('1.0', tk.END)
+                with open('master_values.json', 'r') as file:
+                    self.config_editor.insert(tk.INSERT, file.read())
+            except FileNotFoundError:
+                pass
+            time.sleep(1)
     
+    def start_image_automation(self):
+        # Start image-based automation logic
+        self.image_automation_running = True
+        # make the stop button visible
+        self.start_img_btn.grid_remove()
+        self.stop_img_btn.grid()
+        run_auto_by_image_thread = threading.Thread(target=self.run_auto_by_image_thread)
+        run_auto_by_image_thread.start()
 
-# Set up the main window
+    def stop_image_automation(self):
+        # Stop image-based automation logic
+        self.image_automation_running = False
+        # make the start button visible
+        self.stop_img_btn.grid_remove()
+        self.start_img_btn.grid()
+    
+    def run_auto_by_image_thread(self):
+        while self.image_automation_running:
+            asyncio.run(self.auto_image.run())
+        
+    
+    def start_state_automation(self):
+        # Start state-based automation logic
+        self.state_automation_running = True
+        self.start_state_btn.grid_remove()
+        self.stop_state_btn.grid()
+        run_auto_by_state_thread = threading.Thread(target=self.run_auto_by_state_thread)
+        run_auto_by_state_thread.start()
+    
+    def stop_state_automation(self):
+        # Stop state-based automation logic
+        self.state_automation_running = False
+        self.stop_state_btn.grid_remove()
+        self.start_state_btn.grid()
+    
+    def run_auto_by_state_thread(self):
+        while self.state_automation_running:
+            asyncio.run(self.auto_state.run())
+        
+
+    def start_schedule_automation(self):
+        # Start schedule-based automation logic
+        
+        self.schedule_automation_running = True
+        self.start_schedule_btn.grid_remove()
+        self.stop_schedule_btn.grid()
+        run_auto_by_schedule_thread = threading.Thread(target=self.run_auto_by_schedule_thread)
+        run_auto_by_schedule_thread.start()
+    
+    def stop_schedule_automation(self):
+        # Stop schedule-based automation logic
+        
+        self.schedule_automation_running = False
+        self.stop_schedule_btn.grid_remove()
+        self.start_schedule_btn.grid()
+    
+    def run_auto_by_schedule_thread(self):
+        start_time = time.time()
+        runs = 1
+        while self.schedule_automation_running:
+            asyncio.run(self.auto_schedule.run((time.time() - start_time)/runs))
+            runs += 1
+
 root = tk.Tk()
-# remove the title bar
-root.overrideredirect(True)
-# force the window to be on top
-root.wm_attributes("-topmost", True)
-# dont show the window in the taskbar
-root.wm_attributes("-toolwindow", True)
-
-
-# Add buttons and layout
-# input for name to save the image and script with a default value of 'name'
-name_input = tk.Entry(root)
-name_input.insert(0, 'Name')
-# center the text
-name_input.config(justify=tk.CENTER)
-image_btn = tk.Button(root, text="Upload Image", command=upload_image)
-script_btn = tk.Button(root, text="Upload Script", command=upload_file)
-start_btn = tk.Button(root, text="Play", command=start_script)
-stop_btn = tk.Button(root, text="Pause", command=stop_script, state=tk.DISABLED)
-collapse_btn = tk.Button(root, text="^", command=collapse)
-expand_btn = tk.Button(root, text="+", command=expand)
-
-# change the button colors
-image_btn.config(bg='#393939')
-script_btn.config(bg='#393939')
-start_btn.config(bg='#393939')
-stop_btn.config(bg='#393939')
-collapse_btn.config(bg='#393939')
-expand_btn.config(bg='#393939')
-# change the button text colors
-image_btn.config(fg='#d6d6d6')
-script_btn.config(fg='#d6d6d6')
-start_btn.config(fg='#d6d6d6')
-stop_btn.config(fg='#d6d6d6')
-collapse_btn.config(fg='#d6d6d6')
-expand_btn.config(fg='#d6d6d6')
-
-
-collapse_btn.pack(fill=tk.X)
-name_input.pack(fill=tk.X)
-image_btn.pack(fill=tk.X)
-script_btn.pack(fill=tk.X)
-start_btn.pack(fill=tk.X)
-stop_btn.pack(fill=tk.X)
-
-
-
-
-# Start the GUI event loop
+gui = AutomationGUI(root)
 root.mainloop()
+

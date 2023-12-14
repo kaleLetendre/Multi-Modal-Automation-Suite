@@ -13,6 +13,7 @@ import pstats
 cpu_cores = multiprocessing.cpu_count()
 global master_values
 filename = 'master_values.json'
+active = {"auto_by_image": False, "auto_by_state": False, "auto_by_schedule": False}
 def load_master_values():
     with open(filename, 'r') as f:
         # get the values
@@ -70,7 +71,7 @@ class auto_by_image:
             coordinates.append([x, y, width, height])
         # return coordinates
         return coordinates
-    async def run_auto_by_image(self):
+    async def run(self):
         sample_image = self.screen_capture()
         tasks = [self.process_image(image_name, sample_image) for image_name in self.template_images]
         await asyncio.gather(*tasks)
@@ -108,7 +109,7 @@ class auto_by_state:
                 # run the script
                 await asyncio.create_subprocess_shell(f'python scripts/{script}')
                 return
-    async def run_auto_by_state(self):
+    async def run(self):
         loaded = False
         while not loaded:
             try:
@@ -209,7 +210,7 @@ class auto_by_schedule:
             # run the script
             await asyncio.create_subprocess_shell(f'python scripts/rate_{rate_value};{rate_unit};{current_time}.py')
         return
-    async def run_auto_by_schedule(self, average_latency):
+    async def run(self, average_latency):
         # loop through all the images in the folder
         for script in self.schedule_scripts:
             name = script.split('.')[0]
@@ -219,7 +220,7 @@ class auto_by_schedule:
             await self.process_rate(script, average_latency)
         return True
 
-async def main():
+def main():
     auto_image = auto_by_image()
     auto_state = auto_by_state()
     auto_schedule = auto_by_schedule()  # Assuming you have this class
@@ -231,30 +232,17 @@ async def main():
         start_time = time.time()
 
         # execute the tasks concurrently
-        tasks = [auto_image.run_auto_by_image(), auto_state.run_auto_by_state(), auto_schedule.run_auto_by_schedule(total_latency/runs)]
-        await asyncio.gather(*tasks)
+        tasks = [auto_image.run(), auto_state.run(), auto_schedule.run(total_latency/runs)]
+        asyncio.gather(*tasks)
         latency = time.time() - start_time
         print(f"Average Latency: {total_latency/runs:.2f} seconds", end='\r')
         if latency < 0.1:
-            await asyncio.sleep(0.01 - latency)
+            asyncio.sleep(0.01 - latency)
             latency = 0.1
         total_latency += latency
 
-# Run the main function
-asyncio.run(main())
-
-# async def main():
-#     # Your main function logic here
-#     auto_image = auto_by_image()
-#     await auto_image.run_auto_by_image()
-
-# # Profiling the main function
-# if __name__ == "__main__":
-#     profiler = cProfile.Profile()
-#     profiler.enable()
-
-#     asyncio.run(main())
-
-#     profiler.disable()
-#     stats = pstats.Stats(profiler).sort_stats('cumtime')
-#     stats.print_stats()
+def run_automations():
+    # run the main function in a separate thread
+    main_thread = multiprocessing.Process(target=main)
+    main_thread.start()
+    return main_thread
