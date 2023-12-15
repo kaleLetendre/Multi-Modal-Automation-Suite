@@ -23,7 +23,7 @@ This Multi-Modal Automation Suite is a versatile and powerful tool designed for 
 2. Create corresponding Python scripts in the `scripts` folder; these will execute when matching images are detected.
 3. Create state and schedule scripts in the `scripts` folder.
 4. Configure operational parameters in `master_values.json` according to your needs.
-5. Launch `auto_by.py`
+5. Use the GUI to run the automation
 
 ## System Requirements
 
