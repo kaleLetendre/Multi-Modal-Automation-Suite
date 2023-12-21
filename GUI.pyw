@@ -196,12 +196,8 @@ class AutomationGUI:
             with open('master_values.json', 'r') as f:
                 # get the values
                 master_values = json.load(f)
-        except FileNotFoundError:
-            # create the file
-            with open('master_values.json', 'w') as f:
-                # create the file
-                master_values = {}
-                json.dump(master_values, f)
+        except:
+            self.load_master_values()
         return master_values
 
     def run_auto_bys(self):
