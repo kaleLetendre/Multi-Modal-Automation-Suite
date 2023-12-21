@@ -305,10 +305,13 @@ class AutomationGUI:
             screen_shot = pyautogui.screenshot()
             # crop the image
             screen_shot = screen_shot.crop((top_left[0], top_left[1], bottom_right[0], bottom_right[1]))
+            # rescale the image to half size
             screen_shot.save("temp.png")
             # use PIL to display the image in the window
             image = Image.open('temp.png')
             image = ImageTk.PhotoImage(image)
+            # rescale the image to half size
+            image = image._PhotoImage__photo.subsample(2)
             self.image_view.image = image
             self.image_view.configure(image=image)
 
@@ -342,6 +345,7 @@ class AutomationGUI:
         except:
             pass
         self.container.grid()
+    
     def upload_image_script(self):
         self.container.grid_remove()
 
@@ -363,10 +367,10 @@ class AutomationGUI:
         self.image_script_btn.configure(command=lambda: self.select_script(self.image_script_label))
 
         self.screenshot_btn.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
-        self.image_view.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
+        self.image_view.grid(row=3, column=1, sticky="ew", padx=5, pady=5, rowspan=4, columnspan=4)
 
         self.image_script_upload_btn.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
-        self.notification_label.grid(row=4, column=1, sticky="ew", padx=5, pady=5)
+        self.notification_label.grid(row=5, column=0, sticky="ew", padx=5, pady=5)
     
     def upload_state_script(self):
         self.container.grid_remove()
