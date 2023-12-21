@@ -89,11 +89,12 @@ class auto_by_state:
     def __init__(self):
         self.filename = 'master_values.json'
         self.master_values = load_master_values()
-        self.scripts = os.listdir('scripts')
-        for script in self.scripts:
+        self.temp = os.listdir('scripts')
+        self.scripts = []
+        for script in self.temp:
             # remove scripts that are not states
-            if "state_" not in script:
-                self.scripts.remove(script)
+            if "state_" in script:
+                self.scripts.append(script)
     async def process_state(self,script):
         name = script.split('state_')[1]
         name = name.split('.')[0]
@@ -131,10 +132,7 @@ class auto_by_schedule:
         self.rate_scripts = []
         self.master_values = load_master_values()
         for script in self.scripts:
-            # remove scripts that are not schedules or rates
-            if "schedule_" not in script and "rate_" not in script:
-                self.scripts.remove(script)
-            elif "schedule_" in script:
+            if "schedule_" in script:
                 self.schedule_scripts.append(script)
             elif "rate_" in script:
                 self.rate_scripts.append(script)

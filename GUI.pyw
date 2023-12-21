@@ -27,7 +27,7 @@ class AutomationGUI:
         # label to notify the user that f7 starts all and f8 stops all
         
         # container to hold the status
-        self.status_container = tk.Frame(self.master, bg='#696969')
+        self.status_container = tk.Frame(self.master, bg='#b4b4b4')
         self.status_container.grid(row=0, column=0, sticky="nsew")
         
         # container to hold home
@@ -56,14 +56,14 @@ class AutomationGUI:
         master.grid_rowconfigure(2, weight=1)
 
         # Styling Configuration
-        start_button_style = {'bg': '#4b674d', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
-        stop_button_style = {'bg': '#694848', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        start_button_style = {'bg': '#9edba2', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        stop_button_style = {'bg': '#c48888', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
         condition_button_style = {'bg': '#bebea6', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
         upload_button_style = {'bg': '#b1c1c1', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
         back_button_style = {'bg': '#bcbcbc', 'fg': 'black'}
         
         # ___STATUS CONTAINER___
-        self.f_label = tk.Label(self.status_container, text="F7 starts all, F8 stops all", bg='#696969', fg='black', font=('Helvetica', 10, 'bold'))
+        self.f_label = tk.Label(self.status_container, text="F7 starts all, F8 stops all", bg='#b4b4b4', fg='black', font=('Helvetica', 10, 'bold'))
         self.f_label.grid(row=0, column=1, sticky="ew", padx=5, pady=5)
 
         self.start_img_btn = self.create_button("Start Image Automation", self.start_image_automation, 1, 0, start_button_style, False, container=self.status_container)
@@ -88,7 +88,7 @@ class AutomationGUI:
         # ___IMAGE CONTAINER___
         self.image_back_btn = self.create_button("<", self.back_to_home, 0, 0, back_button_style, False, container=self.image_container)
         self.image_name_input_label = tk.Label(self.image_container, text="Name:", bg='white', fg='black', font=('Helvetica', 10, 'bold'))
-        self.image_name_input = tk.Entry(self.image_container, bg='gray', fg='black', font=('Helvetica', 10, 'bold'))
+        self.image_name_input = tk.Entry(self.image_container, bg='#b4b4b4', fg='black', font=('Helvetica', 10, 'bold'))
         # button to select script from filesystem
         self.image_script_label = tk.Label(self.image_container, text="No Script Selected", bg='white', fg='black', font=('Helvetica', 10, 'bold'))
         self.image_script_btn = self.create_button("Select Script", self.select_script, 1, 0, condition_button_style, False, "image_script_btn", container=self.image_container)
@@ -150,6 +150,7 @@ class AutomationGUI:
 
     def start_image_automation(self):
         # Start image-based automation logic
+        self.auto_image = auto_by.auto_by_image()
         self.image_automation_running = True
         # make the stop button visible
         self.start_img_btn.grid_remove()
@@ -164,6 +165,7 @@ class AutomationGUI:
     
     def start_state_automation(self):
         # Start state-based automation logic
+        self.auto_state = auto_by.auto_by_state()
         self.state_automation_running = True
         self.start_state_btn.grid_remove()
         self.stop_state_btn.grid()
@@ -176,7 +178,7 @@ class AutomationGUI:
     
     def start_schedule_automation(self):
         # Start schedule-based automation logic
-        
+        self.auto_schedule = auto_by.auto_by_schedule()
         self.schedule_automation_running = True
         self.start_schedule_btn.grid_remove()
         self.stop_schedule_btn.grid()
@@ -227,8 +229,7 @@ class AutomationGUI:
 
     def init_screenshot(self):
         # make the container invisible
-        
-        self.container.grid_remove()
+        self.image_container.grid_remove()
         # make the window fullscreen
         self.master.attributes('-fullscreen', True)
         try:
@@ -299,7 +300,7 @@ class AutomationGUI:
         # make the window not transparent
         self.master.attributes('-alpha', 1)
         # make the container visible
-        self.container.grid()
+        self.image_container.grid()
         
     def screen_shot(self, top_left, bottom_right):
         # take a screenshot of the screen and crop it to the coordinates, promt the user for a name and save it to the images folder
