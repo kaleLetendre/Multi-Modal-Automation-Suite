@@ -3,6 +3,7 @@ import json
 import threading
 import time
 import tkinter as tk
+from tkinter import messagebox
 from PIL import ImageTk, Image
 import auto_by
 from tkinter import filedialog
@@ -23,19 +24,29 @@ class AutomationGUI:
         self.auto_image = auto_by.auto_by_image()
         self.auto_state = auto_by.auto_by_state()
         self.auto_schedule = auto_by.auto_by_schedule()
-        # container to hold everything
+        # label to notify the user that f7 starts all and f8 stops all
+        
+        # container to hold the status
+        self.status_container = tk.Frame(self.master, bg='#696969')
+        self.status_container.grid(row=0, column=0, sticky="nsew")
+        
+        # container to hold home
         self.container = tk.Frame(self.master, bg='white')
-        self.container.grid(row=0, column=0, sticky="nsew")
+        self.container.grid(row=1, column=0, sticky="nsew")
 
+        # container to hold the image upload
         self.image_container = tk.Frame(self.master, bg='white')
-        self.image_container.grid(row=0, column=0, sticky="nsew")
+        self.image_container.grid(row=1, column=0, sticky="nsew")
 
+        # container to hold the state upload
         self.state_container = tk.Frame(self.master, bg='white')
-        self.state_container.grid(row=0, column=0, sticky="nsew")
+        self.state_container.grid(row=1, column=0, sticky="nsew")
 
+        # container to hold the schedule upload
         self.schedule_container = tk.Frame(self.master, bg='white')
-        self.schedule_container.grid(row=0, column=0, sticky="nsew")
+        self.schedule_container.grid(row=1, column=0, sticky="nsew")
 
+        # make the non-home containers invisible
         self.state_container.grid_remove()
         self.schedule_container.grid_remove()
         self.image_container.grid_remove()
@@ -45,23 +56,26 @@ class AutomationGUI:
         master.grid_rowconfigure(2, weight=1)
 
         # Styling Configuration
-        start_button_style = {'bg': '#8af08f', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
-        stop_button_style = {'bg': '#754343', 'fg': 'white', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
-        condition_button_style = {'bg': '#fefe92', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
-        upload_button_style = {'bg': '#9affff', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        start_button_style = {'bg': '#4b674d', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        stop_button_style = {'bg': '#694848', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        condition_button_style = {'bg': '#bebea6', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
+        upload_button_style = {'bg': '#b1c1c1', 'fg': 'black', 'font': ('Helvetica', 10, 'bold'), 'padx': 10, 'pady': 5}
         back_button_style = {'bg': '#bcbcbc', 'fg': 'black'}
-        # Button Creation and Placement
-        self.start_img_btn = self.create_button("Start Image Automation", self.start_image_automation, 1, 0, start_button_style, False, container=self.container)
-        self.stop_img_btn = self.create_button("Stop Image Automation", self.stop_image_automation, 1, 0, stop_button_style, True, container=self.container)
+        
+        # ___STATUS CONTAINER___
+        self.f_label = tk.Label(self.status_container, text="F7 starts all, F8 stops all", bg='#696969', fg='black', font=('Helvetica', 10, 'bold'))
+        self.f_label.grid(row=0, column=1, sticky="ew", padx=5, pady=5)
 
-        self.start_state_btn = self.create_button("Start State Automation", self.start_state_automation, 1, 1, start_button_style, False, container=self.container)
-        self.stop_state_btn = self.create_button("Stop State Automation", self.stop_state_automation, 1, 1, stop_button_style, True, container=self.container)
+        self.start_img_btn = self.create_button("Start Image Automation", self.start_image_automation, 1, 0, start_button_style, False, container=self.status_container)
+        self.stop_img_btn = self.create_button("Stop Image Automation", self.stop_image_automation, 1, 0, stop_button_style, True, container=self.status_container)
 
-        self.start_schedule_btn = self.create_button("Start Schedule Automation", self.start_schedule_automation, 1, 2, start_button_style, False, container=self.container)
-        self.stop_schedule_btn = self.create_button("Stop Schedule Automation", self.stop_schedule_automation, 1, 2, stop_button_style, True, container=self.container)
+        self.start_state_btn = self.create_button("Start State Automation", self.start_state_automation, 1, 1, start_button_style, False, container=self.status_container)
+        self.stop_state_btn = self.create_button("Stop State Automation", self.stop_state_automation, 1, 1, stop_button_style, True, container=self.status_container)
 
-        # text that says upload
+        self.start_schedule_btn = self.create_button("Start Schedule Automation", self.start_schedule_automation, 1, 2, start_button_style, False, container=self.status_container)
+        self.stop_schedule_btn = self.create_button("Stop Schedule Automation", self.stop_schedule_automation, 1, 2, stop_button_style, True, container=self.status_container)
 
+        # ___HOME CONTAINER___
         self.upload_image_script_btn = self.create_button("Upload Image Script", self.upload_image_script, 2, 0, upload_button_style, False, container=self.container)
 
         self.upload_state_script_btn = self.create_button("Upload State Script", self.upload_state_script, 2, 1, upload_button_style, False, container=self.container)
@@ -72,8 +86,6 @@ class AutomationGUI:
         self.upload_schedule_script_btn.configure(state='disabled')
 
         # ___IMAGE CONTAINER___
-        # name input
-        # back button
         self.image_back_btn = self.create_button("<", self.back_to_home, 0, 0, back_button_style, False, container=self.image_container)
         self.image_name_input_label = tk.Label(self.image_container, text="Name:", bg='white', fg='black', font=('Helvetica', 10, 'bold'))
         self.image_name_input = tk.Entry(self.image_container, bg='gray', fg='black', font=('Helvetica', 10, 'bold'))
@@ -87,10 +99,12 @@ class AutomationGUI:
         # button to upload the pair
         self.image_script_upload_btn = self.create_button("Upload", self.upload_image_script_pair, 3, 0, condition_button_style, container=self.image_container)
         self.notification_label = tk.Label(self.image_container, text="", bg='white', fg='black', font=('Helvetica', 10, 'bold'))
+        
         # ___STATE CONTAINER___
 
+        
         # ___SCHEDULE CONTAINER___
-        # Configuration Editor
+  
 
         auto_by_thread = threading.Thread(target=self.run_auto_bys)
         auto_by_thread.start()
@@ -418,7 +432,27 @@ class AutomationGUI:
         except Exception as e:
             self.notification_label.configure(text="Upload Failed", fg='red')
             print(e)
+
+    def stop_all(self, event):
+        self.stop_image_automation()
+        self.stop_state_automation()
+        self.stop_schedule_automation()
+    def start_all(self, event):
+        self.start_image_automation()
+        self.start_state_automation()
+        self.start_schedule_automation()
+def on_closing():
+    if messagebox.askokcancel("Quit", "Do you want to quit? like really? like actually?"):
+        root.destroy()
+        exit()
+# make f8 close the program
+def close(event):
+    on_closing()
+# bind f8 to the close function
 root = tk.Tk()
 gui = AutomationGUI(root)
+root.bind('<F8>', gui.stop_all)
+root.bind('<F7>', gui.start_all)
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 
